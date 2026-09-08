@@ -228,8 +228,6 @@ img{display:block;max-width:100%}
 .modal.on{display:flex}
 .mbox{background:var(--bg);border-radius:10px;max-width:1060px;width:100%;max-height:92vh;
   overflow:hidden;display:flex;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
-@media(max-width:760px){.mbox{flex-direction:column;max-height:94vh;overflow-y:auto}
-  .mgal,.minfo{flex:none;overflow:visible}}
 .mgal{background:#111417;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0;flex:1 1 0}
 .mgal-main{aspect-ratio:4/3;background:#0B0D0F;border-radius:6px;overflow:hidden;display:grid;place-items:center}
 .mgal-main img{width:100%;height:100%;object-fit:contain}
@@ -280,6 +278,24 @@ img{display:block;max-width:100%}
 .mclose{position:absolute;top:16px;right:16px;width:38px;height:38px;background:rgba(255,255,255,.92);
   border-radius:50%;display:grid;place-items:center;z-index:2;transition:.14s}
 .mclose:hover{background:#fff;transform:rotate(90deg)}
+/* --- модалка на мобильном = полноэкранный лист (после базовых правил, чтобы побеждать) --- */
+@media(max-width:760px){
+  .modal{padding:0;align-items:stretch;justify-content:stretch}
+  .mbox{flex-direction:column;max-width:100%;width:100%;height:100dvh;max-height:100dvh;
+    border-radius:0;overflow:hidden;position:relative}
+  .mgal{flex:none;overflow:visible;padding:14px;gap:10px}
+  .mgal-main{aspect-ratio:auto;height:38vh;min-height:200px}
+  /* скроллится только инфо; нижний отступ = высота футера, чтобы текст не прятался под кнопки */
+  .minfo{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 18px 92px}
+  .mname{font-size:20px}
+  .mprice .now{font-size:24px}
+  .mtable{margin-bottom:14px}
+  /* кнопки — фиксированный футер поверх .mbox, всегда видны, не наезжают на текст */
+  .mcta{position:absolute;left:0;right:0;bottom:0;margin:0;
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+    background:var(--bg);border-top:1px solid var(--line);box-shadow:0 -8px 20px -10px rgba(0,0,0,.18)}
+  .mclose{position:absolute;top:12px;right:12px}
+}
 
 /* ===== MOBILE FILTER DRAWER ===== */
 @media(max-width:960px){
