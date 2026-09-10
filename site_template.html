@@ -186,7 +186,27 @@ img{display:block;max-width:100%}
 
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 @media(max-width:1180px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.grid{grid-template-columns:1fr}}
+/* на телефоне — 2 колонки, компактная карточка */
+@media(max-width:560px){
+  .grid{grid-template-columns:repeat(2,1fr);gap:11px}
+  .card-body{padding:10px 10px 12px}
+  .card-brand{font-size:9.5px;letter-spacing:.6px}
+  .card-name{font-size:12.5px;line-height:1.28;margin:4px 0 8px;min-height:31px}
+  .card-specs{gap:4px;margin-bottom:9px}
+  .spec-tag{font-size:10.5px;padding:2px 6px}
+  .spec-tag svg{width:11px;height:11px}
+  .card-kind{display:none}
+  .card-badge{font-size:10px;padding:3px 6px}
+  .card-foot{flex-direction:column;align-items:stretch;gap:8px}
+  .price .now{font-size:16px}
+  .price .old{font-size:11px}
+  .more-btn{width:100%;text-align:center;padding:8px 10px;font-size:12px}
+}
+@media(max-width:360px){
+  .grid{gap:8px}
+  .card-body{padding:8px 8px 10px}
+  .card-specs .spec-tag:nth-child(n+3){display:none}
+}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
   display:flex;flex-direction:column;transition:.16s;position:relative}
 .card:hover{box-shadow:var(--shadow);border-color:#C4C0B6;transform:translateY(-2px)}
@@ -281,20 +301,23 @@ img{display:block;max-width:100%}
 /* --- модалка на мобильном = полноэкранный лист (после базовых правил, чтобы побеждать) --- */
 @media(max-width:760px){
   .modal{padding:0;align-items:stretch;justify-content:stretch}
+  /* весь лист прокручивается целиком: фото и текст едут вместе, одним потоком */
   .mbox{flex-direction:column;max-width:100%;width:100%;height:100dvh;max-height:100dvh;
-    border-radius:0;overflow:hidden;position:relative}
-  .mgal{flex:none;overflow:visible;padding:14px;gap:10px}
-  .mgal-main{aspect-ratio:auto;height:38vh;min-height:200px}
-  /* скроллится только инфо; нижний отступ = высота футера, чтобы текст не прятался под кнопки */
-  .minfo{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 18px 92px}
+    border-radius:0;position:relative;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .mgal{flex:none;overflow:visible;padding:14px 14px 0;gap:10px}
+  .mgal-main{aspect-ratio:auto;height:44vh;min-height:230px}
+  /* инфо не скроллится само — прокрутка общая у .mbox; снизу место под фикс-кнопки */
+  .minfo{flex:none;overflow:visible;padding:16px 18px calc(94px + env(safe-area-inset-bottom))}
   .mname{font-size:20px}
   .mprice .now{font-size:24px}
   .mtable{margin-bottom:14px}
-  /* кнопки — фиксированный футер поверх .mbox, всегда видны, не наезжают на текст */
-  .mcta{position:absolute;left:0;right:0;bottom:0;margin:0;
+  /* кнопки прижаты к низу ЭКРАНА (fixed) — всегда под рукой при любой прокрутке */
+  .mcta{position:fixed;left:0;right:0;bottom:0;margin:0;z-index:5;
     padding:12px 18px calc(12px + env(safe-area-inset-bottom));
     background:var(--bg);border-top:1px solid var(--line);box-shadow:0 -8px 20px -10px rgba(0,0,0,.18)}
-  .mclose{position:absolute;top:12px;right:12px}
+  /* крестик закреплён в углу экрана, не уезжает при скролле */
+  .mclose{position:fixed;top:12px;right:12px;z-index:6}
 }
 
 /* ===== MOBILE FILTER DRAWER ===== */
