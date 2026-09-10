@@ -723,12 +723,20 @@ function openModal(id, push=true){
     thumbs.querySelectorAll('.mthumb').forEach(x=>x.classList.toggle('on',x===t));};
   // копируемая ссылка на товар
   const cp=document.getElementById('mCopy');
-  const url=location.origin+location.pathname+location.search+'#p'+p.id;
+  const url=location.origin+location.pathname+location.search+'#'+(p.slug||('p'+p.id));
   cp.onclick=()=>{copyText(url);cp.classList.add('ok');cp.querySelector('span').textContent='Ссылка скопирована ✓';
     setTimeout(()=>{cp.classList.remove('ok');cp.querySelector('span').textContent='Скопировать ссылку на товар';},1800);};
   document.getElementById('mclose').onclick=closeModal;
   document.getElementById('modal').classList.add('on');document.body.style.overflow='hidden';
-  if(push){try{history.pushState({pid:p.id},'','#p'+p.id);}catch(e){}}
+  if(push){try{history.pushState({pid:p.id},'','#'+(p.slug||('p'+p.id)));}catch(e){}}
+}
+// resolve slug из хэша в id товара (+ обратная совместимость со старым #p<id>)
+function pidFromHash(){
+  const h=decodeURIComponent(location.hash.replace(/^#/,''));
+  if(!h)return null;
+  const bySlug=P.find(x=>x.slug===h); if(bySlug)return bySlug.id;
+  const m=h.match(/^p(\d+)$/); if(m && P.find(x=>x.id===m[1]))return m[1];
+  return null;
 }
 function copyText(t){
   if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t));}
@@ -737,16 +745,16 @@ function copyText(t){
 function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity=0;
   document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
 function closeModal(fromPop){document.getElementById('modal').classList.remove('on');document.body.style.overflow='';
-  if(!fromPop && location.hash.indexOf('#p')===0){try{history.pushState(null,'',location.pathname+location.search);}catch(e){}}}
+  if(!fromPop && location.hash){try{history.pushState(null,'',location.pathname+location.search);}catch(e){}}}
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 // deep-link: открытие товара по #p<id> и кнопка "назад"
-window.addEventListener('popstate',()=>{const m=location.hash.match(/^#p(\d+)/);
-  if(m && P.find(x=>x.id===m[1]))openModal(m[1],false);else closeModal(true);});
+window.addEventListener('popstate',()=>{const pid=pidFromHash();
+  if(pid)openModal(pid,false);else closeModal(true);});
 
 // ---- init ----
 buildCats();buildSidebar();render();
-(function(){const m=location.hash.match(/^#p(\d+)/);if(m && P.find(x=>x.id===m[1]))openModal(m[1],false);})();
+(function(){const pid=pidFromHash();if(pid)openModal(pid,false);})();
 </script>
 </body>
 </html>

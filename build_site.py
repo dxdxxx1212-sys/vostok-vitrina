@@ -7,6 +7,43 @@
 import json, re
 from collections import Counter
 
+# --- ЧПУ-слаги: ссылка из ключевых слов позиции вместо набора цифр ---
+_TRANSMAP = {
+    'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z',
+    'и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r',
+    'с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sch',
+    'ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya',
+}
+
+def translit(s):
+    return ''.join(_TRANSMAP.get(ch, ch) for ch in str(s).lower())
+
+def slugify(name, brand, maxlen=60):
+    """Читаемый слаг из ключевых слов позиции. Бренд впереди, если его нет в названии."""
+    base = name
+    b = (brand or '').strip()
+    if b and b.lower() != 'другой' and b.lower() not in name.lower():
+        base = b + ' ' + name
+    s = translit(base)
+    s = re.sub(r'[^a-z0-9]+', '-', s).strip('-')
+    if len(s) > maxlen:                     # режем по границе слова, не посреди
+        cut = s[:maxlen].rsplit('-', 1)[0]
+        s = cut or s[:maxlen]
+    return s or 'pricep'
+
+def assign_slugs(items):
+    """Проставляет уникальные slug'и в порядке отображения (стабильно)."""
+    seen = {}
+    for it in items:
+        base = slugify(it['name'], it['brand'])
+        slug = base
+        if slug in seen:
+            seen[base] += 1
+            slug = f'{base}-{seen[base]}'
+        else:
+            seen[base] = 1
+        it['slug'] = slug
+
 d = json.load(open('catalog.json', encoding='utf-8'))
 try:
     RICH = json.load(open('rich_scrape.json', encoding='utf-8'))
@@ -176,6 +213,7 @@ for p in d:
 
 # сортировка: сначала с ценой (по возрастанию), потом без цены
 out.sort(key=lambda x: (x['price'] is None, x['price'] or 0))
+assign_slugs(out)  # ЧПУ-ссылки после сортировки — стабильны относительно порядка показа
 
 json.dump(out, open('products_inline.json', 'w', encoding='utf-8'), ensure_ascii=False)
 
