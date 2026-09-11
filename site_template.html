@@ -338,8 +338,25 @@ img{display:block;max-width:100%}
   .apply-btn{display:block;margin:8px 16px 16px;padding:13px;background:var(--accent);color:#fff;
     border-radius:5px;font-family:'Rubik';font-weight:700;width:calc(100% - 32px)}
 }
-footer{background:var(--steel);color:#9AA0A8;padding:30px 0;font-size:13px;text-align:center;margin-top:20px}
+footer{background:var(--steel);color:#9AA0A8;padding:34px 0 40px;font-size:13.5px;line-height:1.6;margin-top:24px}
 footer b{color:#fff;font-family:'Rubik'}
+.foot-legal{color:#C7CCD3;font-weight:600}
+.foot-adv{margin-top:4px;opacity:.8;font-size:12.5px}
+.foot-contacts{margin-top:12px}
+.foot-contacts a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.3)}
+.foot-contacts a:hover{border-color:#fff}
+.foot-docs{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 22px}
+.foot-docs a{color:#9AA0A8;text-decoration:underline;cursor:pointer}
+.foot-docs a:hover{color:#fff}
+.foot-copy{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;opacity:.75}
+.docmodal{position:fixed;inset:0;z-index:120;background:rgba(16,18,20,.65);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px}
+.docmodal.on{display:flex}
+.docbox{background:var(--card);color:var(--ink);border-radius:10px;max-width:680px;width:100%;max-height:86vh;overflow-y:auto;padding:28px 30px;position:relative}
+.docx{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:16px;color:var(--ink);line-height:1}
+.docbox h3{font-family:'Rubik';font-size:20px;margin:0 0 14px;padding-right:34px}
+.docbox h4{font-family:'Rubik';font-size:14px;margin:16px 0 4px;color:var(--ink)}
+.docbox .legal-text p{margin:0 0 8px;font-size:13.5px;line-height:1.6;color:#3A3E45}
+@media(max-width:600px){.docbox{padding:22px 18px 30px;max-height:100dvh;border-radius:0}.docmodal{padding:0}}
 </style>
 </head>
 <body>
@@ -404,7 +421,20 @@ footer b{color:#fff;font-family:'Rubik'}
   </div>
 </div>
 
-<footer><div class="wrap">Каталог прицепов — <b>589 моделей</b>. Данные и фото носят справочный характер.</div></footer>
+<footer><div class="wrap">
+  <div class="foot-legal">ИП Зырин Валерий Владимирович • ИНН 644154970400 • ОГРНИП 320774600488876</div>
+  <div style="margin-top:4px">📍 Склад и самовывоз: г. Владивосток, ул. Экипажная, 1 (р-н Центр) · ежедневно 9:00–21:00</div>
+  <div class="foot-adv">Рекламодатель: AL-EF 93 AUDIT Tanacsado es Szolgaltato Korlatolt Felelossegu Tarsasag • рег. № 01-09-268577 • Венгрия</div>
+  <div class="foot-contacts">📞 <a href="tel:+74954873838">+7 (495) 487-38-38</a> · ✉️ <a href="mailto:info@xn----ctbklixakchgm2d.xn--p1ai">info@восток-прицеп.рф</a></div>
+  <div class="foot-docs">
+    <a data-doc="privacy">Политика конфиденциальности</a>
+    <a data-doc="consent">Согласие на обработку данных</a>
+    <a data-doc="offer">Публичная оферта</a>
+  </div>
+  <div class="foot-copy">Сайт носит информационный характер и не является публичной офертой. © 2026 Восток Прицеп.</div>
+</div></footer>
+
+<div class="docmodal" id="docModal"><div class="docbox"><button class="docx" id="docClose" aria-label="Закрыть">✕</button><div id="docBody"></div></div></div>
 
 <div class="modal" id="modal">
   <div class="mbox" id="mbox"></div>
@@ -640,7 +670,7 @@ function card(p){
     <div class="card-img">
       ${p.old&&p.price?`<span class="card-badge">−${Math.round((1-p.price/p.old)*100)}%</span>`:''}
       <span class="card-kind">${p.kind}</span>
-      <img loading="lazy" src="${p.img}" alt="${p.name}" onerror="this.style.opacity=0">
+      <img loading="lazy" decoding="async" src="${p.thumb||p.img}" alt="${p.name}" onerror="this.style.opacity=0">
     </div>
     <div class="card-body">
       <span class="card-brand">${p.brand}</span>
@@ -725,7 +755,7 @@ function openModal(id, push=true){
     <button class="mclose" id="mclose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16181B" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     <div class="mgal">
       <div class="mgal-main"><img id="mMain" src="${imgs[0]}" alt="${p.name}"></div>
-      ${imgs.length>1?`<div class="mgal-thumbs" id="mThumbs">${imgs.map((u,i)=>`<div class="mthumb${i?'':' on'}" data-i="${i}"><img src="${u}" loading="lazy"></div>`).join('')}</div>`:''}
+      ${imgs.length>1?`<div class="mgal-thumbs" id="mThumbs">${imgs.map((u,i)=>`<div class="mthumb${i?'':' on'}" data-i="${i}"><img src="${(p.thumbs&&p.thumbs[i])||u}" loading="lazy"></div>`).join('')}</div>`:''}
     </div>
     <div class="minfo">
       <span class="mbrand">${p.brand} · ${p.kind}</span>
@@ -778,6 +808,41 @@ window.addEventListener('popstate',()=>{const pid=pidFromHash();
 // ---- init ----
 buildCats();buildSidebar();render();
 (function(){const pid=pidFromHash();if(pid)openModal(pid,false);})();
+
+// ---- правовые документы в футере (тексты как на лендинге) ----
+const DOCS={
+  privacy:`<h3>Политика конфиденциальности</h3><div class="legal-text">
+    <p>Редакция от 17 июня 2026 г. Настоящая Политика определяет порядок обработки и защиты персональных данных пользователей сайта восток-прицеп.рф (далее — «Сайт»). Оператор — ИП Зырин Валерий Владимирович (далее — «Оператор»).</p>
+    <h4>1. Общие положения</h4><p>Политика разработана в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных». Отправляя данные через формы, пользователь подтверждает согласие с условиями Политики.</p>
+    <h4>2. Какие данные обрабатываются</h4><p>Имя, номер телефона, выбранный способ связи и сведения, указанные в обращении. Также автоматически могут собираться обезличенные данные о посещении (cookie, IP-адрес, данные систем аналитики).</p>
+    <h4>3. Цели обработки</h4><p>Связь с пользователем по заявке, подбор и расчёт стоимости товара, информирование о статусе обращения, улучшение работы Сайта.</p>
+    <h4>4. Правовые основания</h4><p>Согласие пользователя на обработку персональных данных и исполнение обязательств перед пользователем по его запросу.</p>
+    <h4>5. Хранение и защита</h4><p>Данные хранятся на серверах на территории Российской Федерации в течение срока, необходимого для целей обработки. Оператор принимает организационные и технические меры для защиты данных от несанкционированного доступа.</p>
+    <h4>6. Передача третьим лицам</h4><p>Данные не передаются третьим лицам, за исключением случаев, предусмотренных законодательством РФ, и лиц, привлекаемых Оператором для обработки заявок на условиях конфиденциальности.</p>
+    <h4>7. Права пользователя</h4><p>Пользователь вправе запросить сведения об обработке своих данных, их уточнение или удаление, а также отозвать согласие, направив обращение на контакты Оператора.</p>
+    <h4>8. Контакты</h4><p>ИП Зырин Валерий Владимирович, ИНН 644154970400, ОГРНИП 320774600488876, адрес: г. Владивосток, ул. Экипажная, 1, e-mail: info@восток-прицеп.рф.</p></div>`,
+  consent:`<h3>Согласие на обработку персональных данных</h3><div class="legal-text">
+    <p>Отправляя данные через формы на сайте восток-прицеп.рф, я свободно, своей волей и в своём интересе даю согласие ИП Зырин Валерий Владимирович (ИНН 644154970400) на обработку моих персональных данных.</p>
+    <h4>Состав данных</h4><p>Имя, номер телефона, выбранный способ связи и сведения, указанные в обращении.</p>
+    <h4>Цели</h4><p>Обработка обращения, связь со мной, подбор и расчёт стоимости товара, информирование о заявке.</p>
+    <h4>Действия с данными</h4><p>Сбор, запись, систематизация, хранение, уточнение, использование и удаление — в соответствии с ФЗ № 152-ФЗ.</p>
+    <h4>Срок и отзыв согласия</h4><p>Согласие действует до достижения целей обработки или до его отзыва. Отозвать согласие можно, направив обращение на контакты Оператора.</p></div>`,
+  offer:`<h3>Публичная оферта</h3><div class="legal-text">
+    <p>Редакция от 17 июня 2026 г.</p>
+    <p>Сайт восток-прицеп.рф носит информационный характер. Размещённые материалы, изображения и цены не являются публичной офертой (ст. 437 ГК РФ) и могут быть изменены без уведомления.</p>
+    <h4>1. Предмет</h4><p>Оператор (ИП Зырин Валерий Владимирович) предоставляет информацию о товарах и помогает подобрать модель по запросу пользователя. Точная стоимость, наличие и условия согласуются индивидуально после обращения.</p>
+    <h4>2. Заявка</h4><p>Оставляя заявку, пользователь выражает заинтересованность в подборе и соглашается на связь с ним. Оформление покупки и оплата производятся отдельно по согласованию сторон.</p>
+    <h4>3. Контакты</h4><p>ИП Зырин Валерий Владимирович, ИНН 644154970400, ОГРНИП 320774600488876, адрес: г. Владивосток, ул. Экипажная, 1, e-mail: info@восток-прицеп.рф.</p></div>`
+};
+(function(){
+  const dm=document.getElementById('docModal'),db=document.getElementById('docBody');
+  function openDoc(k){if(!DOCS[k])return;db.innerHTML=DOCS[k];dm.classList.add('on');document.body.style.overflow='hidden';db.parentElement.scrollTop=0;}
+  function closeDoc(){dm.classList.remove('on');document.body.style.overflow='';}
+  document.querySelectorAll('.foot-docs [data-doc]').forEach(a=>a.onclick=()=>openDoc(a.dataset.doc));
+  document.getElementById('docClose').onclick=closeDoc;
+  dm.onclick=e=>{if(e.target===dm)closeDoc();};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dm.classList.contains('on'))closeDoc();});
+})();
 </script>
 </body>
 </html>

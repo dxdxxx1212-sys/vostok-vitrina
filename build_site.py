@@ -4,8 +4,16 @@
 Выводит products_inline.json — массив товаров с производными фасетами для фильтров.
 Описания генерируются из фактов (характеристик), маркетинговый текст источника не копируется.
 """
-import json, re
+import json, re, os
 from collections import Counter
+
+def thumb_of(m):
+    """Путь к лёгкому превью <img>_t.webp, если оно есть; иначе оригинал."""
+    if not m:
+        return m
+    base, _ = os.path.splitext(m)
+    t = base + '_t.webp'
+    return t if os.path.exists(t) else m
 
 # --- ЧПУ-слаги: ссылка из ключевых слов позиции вместо набора цифр ---
 _TRANSMAP = {
@@ -202,6 +210,8 @@ for p in d:
         'brake': brake,
         'img': (p['media'][0] if p['media'] else ''),
         'imgs': p['media'],
+        'thumb': thumb_of(p['media'][0]) if p['media'] else '',   # лёгкое превью для сетки
+        'thumbs': [thumb_of(m) for m in p['media']],              # превью для ленты миниатюр в модалке
         'about': nm.get('about') or gen_descr(p, kind, axes, massa, gruz),
         'pros': nm.get('pros') or [],
         'specs': specs,
