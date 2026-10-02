@@ -70,6 +70,8 @@ img{display:block;max-width:100%}
 .cat.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .cat .n{font-size:11.5px;opacity:.7;font-variant-numeric:tabular-nums}
 .cat.on .n{opacity:.9}
+@media(max-width:760px){.hero.searching .cats{display:none}}
+.search input::-webkit-search-cancel-button{cursor:pointer}
 
 /* ===== LAYOUT ===== */
 .main{display:grid;grid-template-columns:272px 1fr;gap:28px;padding:26px 0 60px;align-items:start}
@@ -382,7 +384,7 @@ footer b{color:#fff;font-family:var(--font)}
     <p>593 модели: бортовые, с тентом, лодочные, самосвальные и коммерческие. Подберите по цене, массе, осям и грузоподъёмности.</p>
     <div class="search">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="search" type="text" placeholder="Поиск по названию или модели…" autocomplete="off">
+      <input id="search" type="search" enterkeyhint="search" placeholder="Поиск по названию или модели…" autocomplete="off">
     </div>
     <div class="cats" id="cats"></div>
   </div>
@@ -499,10 +501,16 @@ const S = {kind:null,q:'',price:null,priceMin:null,priceMax:null,mass:null,axes:
 const SUSP=[{k:'ressor',t:'Рессорная'},{k:'torsion',t:'Торсионная'},{k:'balansir',t:'Балансирная'},{k:'pnevmo',t:'Пневмо'}];
 const PER=24;
 
+// ---- поиск: «2,5»=«2.5», х/*/×=x, ё=е, слова в любом порядке; латиница находит через slug (mzsa, krepysh) ----
+function nq(s){return String(s||'').toLowerCase().replace(/ё/g,'е').replace(/(\d),(?=\d)/g,'$1.').replace(/(\d)\.0(?![\d.])/g,'$1')
+  .replace(/(\d)\s*[x×х*]\s*(?=\d)/g,'$1x').replace(/[«»"'()\/]/g,' ').replace(/\s+/g,' ').trim();}
+P.forEach(p=>{p._s=nq(p.name+' '+p.brand+' '+p.kind+' '+(p.slug||'').replace(/-/g,' '));});
+function setQ(v){S.q=v;S.shown=PER;document.querySelector('.hero').classList.toggle('searching',!!v.trim());render();}
+
 // ---- filtering ----
 function match(p){
   if(S.kind && p.kind!==S.kind) return false;
-  if(S.q){const q=S.q.toLowerCase();if(!(p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)))return false;}
+  if(S.q){const t=nq(S.q).split(' ');if(!t.every(w=>p._s.includes(w)))return false;}
   if(S.brands.size && !S.brands.has(p.brand)) return false;
   if(S.mass && p.massCat!==S.mass) return false;
   if(S.axes.size){const a=p.axes>=3?3:p.axes; if(!S.axes.has(a))return false;}
@@ -736,8 +744,11 @@ document.getElementById('viewTog').onclick=e=>{const b=e.target.closest('button'
   S.view=b.dataset.v;document.querySelectorAll('#viewTog button').forEach(x=>x.classList.toggle('on',x===b));render();};
 document.getElementById('loadmore').onclick=()=>{S.shown+=PER;render();};
 document.getElementById('sort').onchange=e=>{S.sort=e.target.value;render();};
-document.getElementById('search').oninput=e=>{S.q=e.target.value;S.shown=PER;render();};
-document.getElementById('reset').onclick=()=>{Object.assign(S,{kind:null,q:'',price:null,priceMin:null,priceMax:null,mass:null,axes:new Set(),gruz:null,brake:false,susp:new Set(),dump:false,galv:false,brands:new Set(),shown:PER});
+document.getElementById('search').oninput=e=>setQ(e.target.value);
+// Enter / «Найти» на клавиатуре телефона: прячем клавиатуру и показываем результаты
+document.getElementById('search').onkeydown=e=>{if(e.key!=='Enter')return;e.preventDefault();e.target.blur();
+  const t=document.querySelector('.tools');scrollTo({top:t.getBoundingClientRect().top+scrollY-document.querySelector('.hd').offsetHeight-10,behavior:'smooth'});};
+document.getElementById('reset').onclick=()=>{document.querySelector('.hero').classList.remove('searching');Object.assign(S,{kind:null,q:'',price:null,priceMin:null,priceMax:null,mass:null,axes:new Set(),gruz:null,brake:false,susp:new Set(),dump:false,galv:false,brands:new Set(),shown:PER});
   document.getElementById('search').value='';document.getElementById('pMin').value='';document.getElementById('pMax').value='';document.getElementById('bSearch').value='';renderBrands('');render();};
 // mobile drawer
 const side=document.getElementById('side'),bg=document.getElementById('drawerBg');
