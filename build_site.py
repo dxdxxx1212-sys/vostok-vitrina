@@ -166,6 +166,16 @@ try:
 except FileNotFoundError:
     NORM = {}
 
+# ручные добавления (не из скрапа): карточка + готовые нормализованные поля в 'norm'.
+# Отдельный файл, чтобы пересбор catalog.json/normalized.json их не затирал.
+try:
+    EXTRA = json.load(open('extra_products.json', encoding='utf-8'))
+except FileNotFoundError:
+    EXTRA = []
+for e in EXTRA:
+    d.append({k: e[k] for k in ('id', 'name', 'brand', 'price', 'old', 'characteristics', 'media')})
+    NORM[str(e['id'])] = e['norm']
+
 out = []
 for p in d:
     pid = str(p['id'])
