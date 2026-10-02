@@ -411,6 +411,7 @@ footer b{color:#fff;font-family:var(--font)}
         </div>
         <div class="sort">Сортировка
           <select id="sort">
+            <option value="pop">Сначала популярные</option>
             <option value="price-asc">Цена: сначала дешёвые</option>
             <option value="price-desc">Цена: сначала дорогие</option>
             <option value="name">По названию</option>
@@ -494,7 +495,7 @@ const MASS = [
 ];
 
 // ---- state ----
-const S = {kind:null,q:'',price:null,priceMin:null,priceMax:null,mass:null,axes:new Set(),gruz:null,brake:false,susp:new Set(),dump:false,galv:false,brands:new Set(),sort:'price-asc',shown:24,view:'grid'};
+const S = {kind:null,q:'',price:null,priceMin:null,priceMax:null,mass:null,axes:new Set(),gruz:null,brake:false,susp:new Set(),dump:false,galv:false,brands:new Set(),sort:'pop',shown:24,view:'grid'};
 const SUSP=[{k:'ressor',t:'Рессорная'},{k:'torsion',t:'Торсионная'},{k:'balansir',t:'Балансирная'},{k:'pnevmo',t:'Пневмо'}];
 const PER=24;
 
@@ -518,7 +519,8 @@ function match(p){
 }
 function filtered(){
   let r=P.filter(match);
-  if(S.sort==='price-asc')r.sort((a,b)=>(a.price??9e15)-(b.price??9e15));
+  if(S.sort==='pop')r.sort((a,b)=>a.rank-b.rank);
+  else if(S.sort==='price-asc')r.sort((a,b)=>(a.price??9e15)-(b.price??9e15));
   else if(S.sort==='price-desc')r.sort((a,b)=>(b.price??-1)-(a.price??-1));
   else r.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
   return r;

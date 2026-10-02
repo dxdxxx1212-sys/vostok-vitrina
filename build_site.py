@@ -6,6 +6,7 @@
 """
 import json, re, os
 from collections import Counter
+from ranking import assign_ranks
 
 def thumb_of(m):
     """Путь к лёгкому превью <img>_t.webp, если оно есть; иначе оригинал."""
@@ -234,6 +235,7 @@ for p in d:
 # сортировка: сначала с ценой (по возрастанию), потом без цены
 out.sort(key=lambda x: (x['price'] is None, x['price'] or 0))
 assign_slugs(out)  # ЧПУ-ссылки после сортировки — стабильны относительно порядка показа
+assign_ranks(out)  # поле rank для сортировки «Сначала популярные» (ranking.py)
 
 json.dump(out, open('products_inline.json', 'w', encoding='utf-8'), ensure_ascii=False)
 
