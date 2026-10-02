@@ -7,6 +7,7 @@
 <meta name="description" content="Каталог легковых и коммерческих прицепов: бортовые, с тентом, лодочные, самосвальные. Фильтры по цене, массе, осям и грузоподъёмности.">
 <link rel="icon" type="image/png" href="logo.png">
 <meta name="theme-color" content="#17222e">
+<script>if(location.hash.length>1)document.documentElement.className+=' dl'</script>
 <style>
 :root{
   /* фирменная палитра — как на лендинге восток-прицеп.рф */
@@ -242,6 +243,18 @@ img{display:block;max-width:100%}
 .loadmore{display:block;margin:32px auto 0;padding:14px 34px;background:#fff;border:1.5px solid var(--ink);
   border-radius:var(--r);font-family:var(--font);font-weight:700;font-size:14px;transition:.15s}
 .loadmore:hover{background:var(--ink);color:#fff}
+/* заготовки карточек, пока грузится каталог */
+.card.sk{pointer-events:none}
+.card.sk .card-img,.card.sk i{background:linear-gradient(90deg,var(--line2) 25%,#F6F8FA 50%,var(--line2) 75%);background-size:200% 100%;animation:sk 1.2s linear infinite}
+.card.sk i{display:block;height:12px;border-radius:6px;margin:6px 0 10px}
+.card.sk i:nth-child(1){width:40%}.card.sk i:nth-child(3){width:60%;height:18px;margin-top:22px}
+@keyframes sk{to{background-position:-200% 0}}
+/* открыли по ссылке на модель — пока страница грузится, показываем окно загрузки, а не пустой каталог */
+html.dl .modal{display:flex}
+.mbox:empty{max-width:420px;min-height:180px;align-items:center;justify-content:center;background:var(--card)}
+.mbox:empty::after{content:"Загружаем карточку…";font-weight:700;color:var(--muted);padding-top:46px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='20' fill='none' stroke='%23F6871F' stroke-width='5' stroke-dasharray='90 40'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 25 25' to='360 25 25' dur='.8s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/svg%3E") top center no-repeat}
+.mload{color:var(--muted);font-size:13.5px;margin:4px 0 18px}
 .empty{text-align:center;padding:70px 20px;color:var(--muted)}
 .empty svg{color:var(--line);margin-bottom:14px}
 .empty h3{font-family:var(--font);color:var(--ink);margin-bottom:6px}
@@ -406,7 +419,7 @@ footer b{color:#fff;font-family:var(--font)}
     <div class="content">
       <div class="tools">
         <button class="filters-btn" id="openFilters"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></svg>Фильтры<span class="fc" id="filtCount" style="display:none">0</span></button>
-        <div class="found">Найдено <b id="found">0</b></div>
+        <div class="found">Найдено <b id="found">…</b></div>
         <div class="viewtog" id="viewTog">
           <button data-v="grid" class="on" title="Плитка"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
           <button data-v="table" title="Таблица"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M3 12h18M3 19h18"/></svg></button>
@@ -421,7 +434,7 @@ footer b{color:#fff;font-family:var(--font)}
         </div>
       </div>
       <div class="achips" id="achips"></div>
-      <div class="grid" id="grid"></div>
+      <div class="grid" id="grid"><div class="card sk"><div class="card-img"></div><div class="card-body"><i></i><i></i><i></i></div></div><div class="card sk"><div class="card-img"></div><div class="card-body"><i></i><i></i><i></i></div></div><div class="card sk"><div class="card-img"></div><div class="card-body"><i></i><i></i><i></i></div></div><div class="card sk"><div class="card-img"></div><div class="card-body"><i></i><i></i><i></i></div></div><div class="card sk"><div class="card-img"></div><div class="card-body"><i></i><i></i><i></i></div></div><div class="card sk"><div class="card-img"></div><div class="card-body"><i></i><i></i><i></i></div></div></div>
       <button class="loadmore" id="loadmore" style="display:none">Показать ещё</button>
     </div>
   </div>
@@ -448,6 +461,8 @@ footer b{color:#fff;font-family:var(--font)}
 
 <script>
 window.PRODUCTS = __DATA__;
+// описания/характеристики/все фото — отдельным файлом (assemble.py), догружаются после показа каталога
+const DETAILS_URL = '__DETAILS_URL__';
 
 const ICONS = {
   'Бортовой':'M2 8h13v8H2z M15 11h4l3 3v2h-7z',
@@ -760,10 +775,11 @@ document.getElementById('applyBtn').onclick=closeD;
 bg.onclick=closeD;
 
 // ---- modal ----
+let curId=null;
 function openModal(id, push=true){
   const p=P.find(x=>x.id===id);if(!p)return;
-  const imgs=p.imgs.length?p.imgs:[p.img];
-  const rows=p.specs.map(s=>`<tr><td>${s.t}</td><td>${s.v}</td></tr>`).join('');
+  const imgs=(p.imgs&&p.imgs.length)?p.imgs:[p.img];
+  const rows=(p.specs||[]).map(s=>`<tr><td>${s.t}</td><td>${s.v}</td></tr>`).join('');
   const priceHtml = p.price!=null
     ? `<span class="now">${fmt(p.price)}</span><span class="cur">₽</span>${p.old?`<span class="old">${fmt(p.old)} ₽</span>`:''}`
     : `<span class="now" style="font-size:20px;color:var(--muted)">Цена по запросу</span>`;
@@ -778,6 +794,7 @@ function openModal(id, push=true){
       <h2 class="mname">${p.name}</h2>
       <div class="mprice">${priceHtml}</div>
       <button class="mcopy" id="mCopy"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><span>Скопировать ссылку на товар</span></button>
+      ${p.specs?'':'<div class="mload">Загружаем описание и характеристики…</div>'}
       ${p.about?`<div class="mabout">${esc(p.about)}</div>`:''}
       ${(p.pros&&p.pros.length)?`<ul class="mpros">${p.pros.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
       ${rows?`<div class="mspec-t">Характеристики</div><table class="mtable">${rows}</table>`:''}
@@ -796,7 +813,7 @@ function openModal(id, push=true){
   cp.onclick=()=>{copyText(url);cp.classList.add('ok');cp.querySelector('span').textContent='Ссылка скопирована ✓';
     setTimeout(()=>{cp.classList.remove('ok');cp.querySelector('span').textContent='Скопировать ссылку на товар';},1800);};
   document.getElementById('mclose').onclick=closeModal;
-  document.getElementById('modal').classList.add('on');document.body.style.overflow='hidden';
+  document.getElementById('modal').classList.add('on');document.body.style.overflow='hidden';curId=p.id;
   if(push){try{history.pushState({pid:p.id},'','#'+(p.slug||('p'+p.id)));}catch(e){}}
 }
 // resolve slug из хэша в id товара (+ обратная совместимость со старым #p<id>)
@@ -813,7 +830,7 @@ function copyText(t){
 }
 function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity=0;
   document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
-function closeModal(fromPop){document.getElementById('modal').classList.remove('on');document.body.style.overflow='';
+function closeModal(fromPop){curId=null;document.documentElement.classList.remove('dl');document.getElementById('modal').classList.remove('on');document.body.style.overflow='';
   if(!fromPop && location.hash){try{history.pushState(null,'',location.pathname+location.search);}catch(e){}}}
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
@@ -823,7 +840,16 @@ window.addEventListener('popstate',()=>{const pid=pidFromHash();
 
 // ---- init ----
 buildCats();buildSidebar();render();
-(function(){const pid=pidFromHash();if(pid)openModal(pid,false);})();
+(function(){const pid=pidFromHash();if(pid)openModal(pid,false);else closeModal(true);})();
+// ---- догрузка деталей ----
+function loadDetails(retry){
+  fetch(DETAILS_URL).then(r=>{if(!r.ok)throw 0;return r.json();}).then(D=>{
+    const K=['about','pros','specs','imgs','thumbs'];
+    P.forEach(p=>{const d=D[p.id];if(d)K.forEach((k,i)=>{p[k]=d[i];});});
+    if(curId)openModal(curId,false);   // окно уже открыто — дорисовываем описание и галерею
+  }).catch(()=>{if(retry)setTimeout(()=>loadDetails(false),1500);});
+}
+loadDetails(true);
 
 // ---- правовые документы в футере (тексты как на лендинге) ----
 const DOCS={
